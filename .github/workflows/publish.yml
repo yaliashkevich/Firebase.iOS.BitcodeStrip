@@ -1,0 +1,32 @@
+name: Build & Publish
+
+on:
+  workflow_dispatch:
+
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Workloads Restore
+      run: dotnet workload restore src/Firebase.iOS.BitcodeStrip/Firebase.iOS.BitcodeStrip.csproj
+
+    - name: Pack
+      run: dotnet pack src/Firebase.iOS.BitcodeStrip/Firebase.iOS.BitcodeStrip.csproj --output packs
+
+    - name: List output
+      run: ls -l packs
+
+    - name: Publish to NuGet
+      run: dotnet nuget push "packs/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

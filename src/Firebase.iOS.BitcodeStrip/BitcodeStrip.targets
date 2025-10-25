@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- 
+    That solves following issue https://github.com/dotnet/macios/issues/22591
+    by overriding Xamarin.Firebase.iOS.Core targets and setting proper working dir for bitcode_strip execution (XCode 16.4).
+    It works well if executed from dir it resides in: it locates "strip" utility that resides in same dir without any issues,
+    otherwise it fails with "ld: file cannot be open()ed, errno=2 path=strip" error.
+   -->
+  <Target Name="_FirebaseStripBitcodeFromFrameworksOnMac">
+    <!-- Get the frameworks to strip bitcode -->
+    <FindInList 
+      List="@(_FrameworkNativeReference)"
+      ItemSpecToFind="%(_FrameworkNamesToStripBitcode.Identity)"
+      MatchFileNameOnly="True">
+      <Output TaskParameter="ItemFound" ItemName="_FrameworksToStripBitcode"/>
+    </FindInList>
+
+    <!-- Find the bitcode_strip command -->
+    <Exec Command="xcrun -find bitcode_strip" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_BitcodeStripCommand" />
+    </Exec>
+
+    <!-- Capture bitcode_strip dir -->
+    <PropertyGroup>
+      <_BitcodeStripDir>$([System.IO.Path]::GetDirectoryName($(_BitcodeStripCommand)))</_BitcodeStripDir>
+    </PropertyGroup>
+
+    <!-- Strip the bitcode from frameworks -->
+    <Exec WorkingDirectory="$(_BitcodeStripDir)" Command="./bitcode_strip %(_FrameworksToStripBitcode.Identity) -r -o %(_FrameworksToStripBitcode.Identity)"/>
+  </Target>
+
+  <Target Name="_FirebaseStripBitcodeFromFrameworksOnWindows"
+          Condition="'$(IsMacEnabled)'=='true'">
+    <!-- Get the frameworks to strip bitcode -->
+    <FindInList 
+      CaseSensitive="false"
+      List="@(_FrameworkNativeReference)"
+      ItemSpecToFind="%(_FrameworkNamesToStripBitcode.Identity)"
+      MatchFileNameOnly="True">
+      <Output TaskParameter="ItemFound" ItemName="_FrameworksToStripBitcode"/>
+    </FindInList>
+
+    <!-- Strip the bitcode from frameworks -->
+    <!--
+      use subshell for safe change of working dir, so it will not cause any side effects on subsequent commands
+      (cd "$(dirname "$(xcrun -find bitcode_strip)")" && ./bitcode_strip %(_FrameworksToStripBitcode.Identity) -r -o %(_FrameworksToStripBitcode.Identity))
+    -->
+    <Exec SessionId="$(BuildSessionId)"
+          Command="(cd &quot;%24(dirname &quot;%24(xcrun -find bitcode_strip)&quot;)&quot; &amp;&amp; ./bitcode_strip %(_FrameworksToStripBitcode.Identity) -r -o %(_FrameworksToStripBitcode.Identity))" />
+
+    <CopyFileFromBuildServer 
+      SessionId="$(BuildSessionId)" 
+      File="%(_FrameworksToStripBitcode.Identity)" 
+      TargetFile="%(_FrameworksToStripBitcode.Identity)" />    
+  </Target>
+</Project>

@@ -1,0 +1,2 @@
+Helper tool for stripping bitcode from native frameworks shipped with Xamarin.Firebase.iOS.* packages, ensuring compatibility with the modern Xcode toolchain.
+https://github.com/yaliashkevich/Firebase.iOS.BitcodeStrip
