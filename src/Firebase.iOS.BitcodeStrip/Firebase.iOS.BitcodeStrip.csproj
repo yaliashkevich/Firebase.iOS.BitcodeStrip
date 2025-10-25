@@ -10,7 +10,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <RepositoryUrl>https://github.com/yaliashkevich/Firebase.iOS.BitcodeStrip.git</RepositoryUrl>
     <PackageProjectUrl>https://github.com/yaliashkevich/Firebase.iOS.BitcodeStrip</PackageProjectUrl>
-    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>xamarin;firebase;ios;bitcode;bitcode_strip</PackageTags>
   </PropertyGroup>
   <ItemGroup>
