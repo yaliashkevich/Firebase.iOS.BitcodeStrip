@@ -90,6 +90,16 @@ Windows
 
 We rely on **determenistic order** of targets imports from nuget packages. The order is dictated by dependency graph. If package A references package B than targets from package B are imported before targets from package A. We do explicitly reference `Xamarin.Firebase.iOS.Core` package to ensure the overrides are imported after original targets. 
 
+## Device Incremental Builds
+
+Execution of the `bitcode_strip` target takes ten(s) of seconds on every device build, which slows down your incremental builds by that amount. During development, you generally don't care about bitcode until you submit to the App Store. Speed up incremental debug builds by disabling `bitcode_strip`.
+
+```
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <FirebaseStripBitcode>false</FirebaseStripBitcode>
+  </PropertyGroup>
+```
+
 ---
 **Note**
 
